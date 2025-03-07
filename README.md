@@ -811,6 +811,78 @@ namespace ConsoleApplication1
 
 </details> 
 
+### Паттерны
+<details><summary>Принципы SOLID</summary></details>
+
+<summary>Структурные паттерны</summary>
+
+<details><summary>Интерфейсы и их реализация</summary>
+
+  Декоратор (Decorator) представляет структурный шаблон проектирования, который позволяет динамически подключать к объекту дополнительную функциональность(Когда применение наследования неприемлемо).
+
+- Возможный пример реализации
+```csharp
+  /// <summary>
+  /// абстрактный класс, который определяет интерфейс для наследуемых объектов
+  /// </summary>
+
+  abstract class Component 
+  {
+      public abstract void Operation();
+  }
+
+  /// <summary>
+  /// конкретная реализация компонента, в которую с помощью декоратора добавляется новая функциональность
+  /// </summary>
+  class ConcreteComponent : Component
+  {
+      public override void Operation()
+      {}
+  }
+
+  /// <summary>
+  /// собственно декоратор, реализуется в виде абстрактного класса и имеет тот же базовый класс, что и декорируемые объекты.
+  /// </summary>
+
+  abstract class Decorator : Component
+  {
+      protected Component component;
+   
+      public void SetComponent(Component component)
+      {
+          this.component = component;
+      }
+   
+      public override void Operation()
+      {
+          if (component != null)
+              component.Operation();
+      }
+  }
+
+  /// <summary>
+  /// представляют дополнительные функциональности, которыми должен быть расширен объект ConcreteComponent.
+  /// </summary>
+
+  class ConcreteDecoratorA : Decorator
+  {
+      public override void Operation()
+      {
+          base.Operation();
+      }
+  }
+
+  class ConcreteDecoratorB : Decorator
+  {
+      public override void Operation()
+      {
+          base.Operation();
+      }
+  }
+```
+
+
+</details>
 
 ### Ссылки на литературу
 <details><summary>Ссылки</summary>  
