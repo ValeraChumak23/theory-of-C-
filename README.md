@@ -814,9 +814,9 @@ namespace ConsoleApplication1
 ### Паттерны
 <details><summary>Принципы SOLID</summary></details>
 
-<summary>Структурные паттерны</summary>
+- <summary>Структурные паттерны</summary>
 
-<details><summary>Интерфейсы и их реализация</summary>
+<details><summary>Декоратор</summary>
 
   Декоратор (Decorator) представляет структурный шаблон проектирования, который позволяет динамически подключать к объекту дополнительную функциональность(Когда применение наследования неприемлемо).
 
