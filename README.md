@@ -1147,7 +1147,7 @@ public class SectionDatabase
 
 > #### Поведенческие паттерны
 
-#### Структурные паттерны
+> #### Структурные паттерны
 
 <details>
   <summary><b>Декоратор (Decorator)</b></summary>
