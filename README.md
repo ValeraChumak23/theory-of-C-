@@ -1447,6 +1447,121 @@ public class Program {
 
 </details>
 
+<details>
+  <summary><b>Мост (Bridge)</b></summary>
+
+**Мост** — это структурный шаблон проектирования, который разделяет абстракцию и её реализацию, позволяя им развиваться независимо.
+
+**Когда применять:** Когда необходимо разделить абстрактные и конкретные реализации, особенно если их независимое развитие возможно по двум осям.
+
+### 🔹 Пример реализации (C#)
+
+```csharp
+using System;
+// Интерфейс реализации
+public interface IImplementor {
+    void OperationImpl();
+}
+
+public class ConcreteImplementorA : IImplementor {
+    public void OperationImpl() {
+        Console.WriteLine("ConcreteImplementorA operation.");
+    }
+}
+
+// Абстракция, использующая реализацию
+public abstract class Abstraction {
+    protected IImplementor implementor;
+    public Abstraction(IImplementor implementor) {
+        this.implementor = implementor;
+    }
+    public abstract void Operation();
+}
+
+public class RefinedAbstraction : Abstraction {
+    public RefinedAbstraction(IImplementor implementor) : base(implementor) { }
+    public override void Operation() {
+        implementor.OperationImpl();
+    }
+}
+
+// Класс для демонстрации вызовов
+public class Program {
+    public static void Main() {
+        IImplementor implementor = new ConcreteImplementorA();
+        Abstraction abstraction = new RefinedAbstraction(implementor);
+        abstraction.Operation();
+        // Ожидаемый вывод: ConcreteImplementorA operation.
+    }
+}
+```
+**Объяснение реализации:** Абстракция делегирует выполнение методов объекту-реализации. Это позволяет менять как абстракцию, так и реализацию независимо друг от друга.
+
+**Плюсы и минусы:**
+
+Плюсы: гибкость, снижение связности, независимое расширение обеих сторон.
+
+Минусы: усложнение архитектуры, может быть избыточным для простых систем.
+
+</details>
+
+<details>
+  <summary><b>Приспособленец (Flyweight)</b></summary>
+
+**Приспособленец** — это структурный шаблон проектирования, который позволяет эффективно использовать память, разделяя общие данные между множеством мелких объектов.
+
+**Когда применять:** Когда в системе требуется большое количество объектов, многие из которых имеют общие части состояния.
+
+### 🔹 Пример реализации (C#)
+
+```csharpusing System;
+using System.Collections.Generic;
+
+// Приспособленец с внутренним (общим) состоянием
+public class Flyweight {
+    private string intrinsicState;
+    public Flyweight(string intrinsicState) {
+        this.intrinsicState = intrinsicState;
+    }
+    public void Operation(string extrinsicState) {
+        Console.WriteLine("Intrinsic: " + intrinsicState + ", Extrinsic: " + extrinsicState);
+    }
+}
+
+// Фабрика приспособленцев
+public class FlyweightFactory {
+    private Dictionary<string, Flyweight> flyweights = new Dictionary<string, Flyweight>();
+    public Flyweight GetFlyweight(string key) {
+        if (!flyweights.ContainsKey(key))
+            flyweights[key] = new Flyweight(key);
+        return flyweights[key];
+    }
+}
+
+// Класс для демонстрации вызовов
+public class Program {
+    public static void Main() {
+        FlyweightFactory factory = new FlyweightFactory();
+        Flyweight fly1 = factory.GetFlyweight("SharedState");
+        fly1.Operation("Unique1");
+        Flyweight fly2 = factory.GetFlyweight("SharedState");
+        fly2.Operation("Unique2");
+        // Ожидаемый вывод:
+        // Intrinsic: SharedState, Extrinsic: Unique1
+        // Intrinsic: SharedState, Extrinsic: Unique2
+    }
+}
+```
+**Объяснение реализации:** Фабрика создаёт или возвращает уже существующий объект с нужным внутренним состоянием. Внешнее состояние передаётся методам объекта, позволяя разделять данные.
+
+**Плюсы и минусы:**
+
+Плюсы: значительное сокращение потребления памяти, особенно при большом количестве объектов.
+
+Минусы: усложнение логики за счёт разделения состояния, повышенная зависимость от корректного разделения внутреннего и внешнего состояния.
+
+</details>
+
 ### Ссылки на литературу
 <details><summary>Ссылки</summary>  
 Ссылки на литературу которая была использоана при написании данного конспекта:  
