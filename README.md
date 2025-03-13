@@ -1673,6 +1673,142 @@ public class Program {
 Минусы: риск превращения посредника в «бога-объект», усложнение логики.
 </details>
 
+<details>
+  <summary><b>Хранитель (Memento)</b></summary>
+
+**Хранитель** — это поведенческий шаблон проектирования, который позволяет сохранить и восстановить состояние объекта без нарушения его инкапсуляции.
+
+**Когда применять:** Когда требуется реализовать функциональность отмены/возврата (undo/redo) или временное сохранение состояния.
+
+### 🔹 Пример реализации (C#)
+
+```csharp
+using System;
+
+// Хранитель, сохраняющий состояние
+public class Memento {
+    public string State { get; private set; }
+    public Memento(string state) {
+        State = state;
+    }
+}
+
+// Источник, создающий и восстанавливающий состояние
+public class Originator {
+    public string State { get; set; }
+    public Memento SaveState() {
+        return new Memento(State);
+    }
+    public void RestoreState(Memento memento) {
+        State = memento.State;
+    }
+}
+
+// Опекун, управляющий хранением мементо
+public class Caretaker {
+    private Memento memento;
+    public void Save(Originator originator) {
+        memento = originator.SaveState();
+    }
+    public void Restore(Originator originator) {
+        originator.RestoreState(memento);
+    }
+}
+
+// Класс для демонстрации вызовов
+public class Program {
+    public static void Main() {
+        Originator originator = new Originator();
+        originator.State = "State1";
+        Caretaker caretaker = new Caretaker();
+        caretaker.Save(originator);
+        originator.State = "State2";
+        Console.WriteLine("Current state: " + originator.State); // Ожидаемый вывод: State2
+        caretaker.Restore(originator);
+        Console.WriteLine("Restored state: " + originator.State); // Ожидаемый вывод: State1
+    }
+}
+```
+**Объяснение реализации:** Объект Originator создаёт объект Memento для сохранения своего состояния, а Caretaker управляет этим сохранением, не нарушая инкапсуляцию.
+
+**Плюсы и минусы:**
+
+Плюсы: сохранение инкапсуляции, простая реализация отмены действий.
+
+Минусы: может потреблять много памяти при сохранении больших состояний.
+</details>
+
+<details>
+  <summary><b>Посетитель (Visitor)</b></summary>
+
+**Посетитель** — это поведенческий шаблон проектирования, который позволяет определить новую операцию для объектов, не изменяя их классы, вынося операцию в отдельный класс.
+
+**Когда применять:** Когда требуется выполнить операцию над группой разнородных объектов, не изменяя их структуры.
+
+### 🔹 Пример реализации (C#)
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+// Интерфейс посетителя
+public interface IVisitor {
+    void Visit(ElementA element);
+    void Visit(ElementB element);
+}
+
+// Базовый элемент
+public abstract class Element {
+    public abstract void Accept(IVisitor visitor);
+}
+
+public class ElementA : Element {
+    public override void Accept(IVisitor visitor) {
+        visitor.Visit(this);
+    }
+}
+
+public class ElementB : Element {
+    public override void Accept(IVisitor visitor) {
+        visitor.Visit(this);
+    }
+}
+
+// Конкретный посетитель, реализующий операции
+public class ConcreteVisitor : IVisitor {
+    public void Visit(ElementA element) {
+        Console.WriteLine("Visited ElementA");
+    }
+    public void Visit(ElementB element) {
+        Console.WriteLine("Visited ElementB");
+    }
+}
+
+// Класс для демонстрации вызовов
+public class Program {
+    public static void Main() {
+        List<Element> elements = new List<Element> { new ElementA(), new ElementB() };
+        ConcreteVisitor visitor = new ConcreteVisitor();
+        foreach (var element in elements) {
+            element.Accept(visitor);
+        }
+        // Ожидаемый вывод:
+        // Visited ElementA
+        // Visited ElementB
+    }
+}
+
+```
+**Объяснение реализации:** Каждый элемент принимает посетителя, который выполняет операцию, зависящую от типа элемента, что позволяет добавлять новые операции без изменения классов элементов.
+
+**Плюсы и минусы:**
+
+Плюсы: расширяемость операций, соблюдение принципа открытости/закрытости.
+
+Минусы: изменение интерфейса элементов требует обновления всех посетителей.
+</details>
+
+
 > #### Структурные паттерны
 
 <details>
