@@ -1370,6 +1370,309 @@ public class Program {
 Минусы: ограниченная гибкость, если требуется динамически менять последовательность шагов.
 </details>
 
+<details>
+  <summary><b>Итератор (Iterator)</b></summary>
+
+**Итератор** — это поведенческий шаблон проектирования, который предоставляет способ последовательного доступа к элементам агрегированного объекта, не раскрывая его внутреннюю структуру.
+
+**Когда применять:** При необходимости обойти коллекцию, не предоставляя доступ к её внутреннему устройству.
+
+### 🔹 Пример реализации (C#)
+
+```csharp
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+// Агрегат, реализующий IEnumerable
+public class ConcreteAggregate<T> : IEnumerable<T> {
+    private List<T> items = new List<T>();
+    public void Add(T item) { items.Add(item); }
+    // обощенный метод для воззвращения коллекции
+    public IEnumerator<T> GetEnumerator() {
+        return items.GetEnumerator();
+    }
+    // не обобщенный, обязателен в реализации 
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
+    }
+}
+
+// Класс для демонстрации вызовов
+public class Program {
+    public static void Main() {
+        ConcreteAggregate<int> aggregate = new ConcreteAggregate<int>();
+        aggregate.Add(1);
+        aggregate.Add(2);
+        aggregate.Add(3);
+        foreach (var item in aggregate) {
+            Console.WriteLine(item);
+        }
+        // Ожидаемый вывод:
+        // 1
+        // 2
+        // 3
+    }
+}
+```
+**Объяснение реализации:** Реализуя IEnumerable<T>, коллекция становится совместимой с оператором foreach, что скрывает детали внутреннего представления.
+
+**Плюсы и минусы:**
+
+Плюсы: простота использования и интеграция с языковыми конструкциями.
+
+Минусы: может скрывать неэффективность итерации в кастомных коллекциях.
+</details>
+
+<details>
+  <summary><b>Состояние (State)</b></summary>
+
+**Состояние** — это поведенческий шаблон проектирования, который позволяет объекту изменять поведение в зависимости от его внутреннего состояния, словно меняется его класс.
+
+**Когда применять:** Когда объект должен менять своё поведение при изменении состояния, а условные операторы приводят к громоздкому коду.
+
+### 🔹 Пример реализации (C#)
+
+```csharp
+using System;
+
+// Интерфейс состояния
+public interface IState {
+    void Handle(ContextState context);
+}
+
+public class ConcreteStateA : IState {
+    public void Handle(ContextState context) {
+        Console.WriteLine("State A handling.");
+        context.State = new ConcreteStateB();
+    }
+}
+
+public class ConcreteStateB : IState {
+    public void Handle(ContextState context) {
+        Console.WriteLine("State B handling.");
+        context.State = new ConcreteStateA();
+    }
+}
+
+// Контекст, который делегирует поведение состоянию
+public class ContextState {
+    public IState State { get; set; }
+    public ContextState(IState state) {
+        State = state;
+    }
+    public void Request() {
+        State.Handle(this);
+    }
+}
+
+// Класс для демонстрации вызовов
+public class Program {
+    public static void Main() {
+        ContextState context = new ContextState(new ConcreteStateA());
+        context.Request(); // Ожидаемый вывод: State A handling.
+        context.Request(); // Ожидаемый вывод: State B handling.
+    }
+}
+```
+**Объяснение реализации:** Контекст хранит текущее состояние и делегирует обработку вызова ему. Каждое состояние само определяет, к какому следующему состоянию перейти.
+
+**Плюсы и минусы:**
+
+Плюсы: упрощение логики при множестве состояний, разделение ответственности.
+
+Минусы: увеличение числа классов, усложнение структуры при множестве состояний.
+</details>
+
+<details>
+  <summary><b>Цепочка обязанностей (Chain of Responsibility)</b></summary>
+
+**Цепочка обязанностей** — это поведенческий шаблон проектирования, который позволяет передавать запрос по цепочке объектов-обработчиков, где каждый решает, обработать запрос или передать дальше.
+
+**Когда применять:** Когда несколько объектов могут обработать запрос, и получатель неизвестен заранее.
+
+### 🔹 Пример реализации (C#)
+
+```csharp
+using System;
+
+// Абстрактный обработчик
+public abstract class Handler {
+    protected Handler next;
+    public void SetNext(Handler nextHandler) {
+        next = nextHandler;
+    }
+    public abstract void HandleRequest(int request);
+}
+
+public class ConcreteHandler1 : Handler {
+    public override void HandleRequest(int request) {
+        if (request < 10)
+            Console.WriteLine("Handler1 handled request " + request);
+        else if (next != null)
+            next.HandleRequest(request);
+    }
+}
+
+public class ConcreteHandler2 : Handler {
+    public override void HandleRequest(int request) {
+        if (request >= 10)
+            Console.WriteLine("Handler2 handled request " + request);
+        else if (next != null)
+            next.HandleRequest(request);
+    }
+}
+
+// Класс для демонстрации вызовов
+public class Program {
+    public static void Main() {
+        ConcreteHandler1 handler1 = new ConcreteHandler1();
+        ConcreteHandler2 handler2 = new ConcreteHandler2();
+        handler1.SetNext(handler2);
+        handler1.HandleRequest(5);   // Ожидается обработка в Handler1
+        handler1.HandleRequest(15);  // Ожидается обработка в Handler2
+    }
+}
+```
+**Объяснение реализации:** Каждый обработчик проверяет возможность обработки запроса. Если не может – передаёт его следующему в цепочке.
+
+**Плюсы и минусы:**
+
+Плюсы: уменьшение связанности, гибкость добавления новых обработчиков.
+
+Минусы: не гарантируется обработка запроса, возможны проблемы с производительностью.
+</details>
+
+<details>
+  <summary><b>Интерпретатор (Interpreter)</b></summary>
+
+**Интерпретатор** — это поведенческий шаблон проектирования, который определяет грамматику для представления языка и интерпретатор, который выполняет выражения, заданные этой грамматикой.
+
+**Когда применять:** Для реализации небольших языков или выражений, где удобна декларативная интерпретация.
+
+### 🔹 Пример реализации (C#)
+
+```csharp
+using System;
+using System.Collections.Generic;
+
+// Абстрактное выражение
+public abstract class Expression {
+    public abstract int Interpret(Dictionary<string, int> context);
+}
+
+// Числовое выражение
+public class Number : Expression {
+    private int value;
+    public Number(int value) { this.value = value; }
+    public override int Interpret(Dictionary<string, int> context) {
+        return value;
+    }
+}
+
+// Операция сложения
+public class Add : Expression {
+    private Expression left, right;
+    public Add(Expression left, Expression right) {
+        this.left = left;
+        this.right = right;
+    }
+    public override int Interpret(Dictionary<string, int> context) {
+        return left.Interpret(context) + right.Interpret(context);
+    }
+}
+
+// Класс для демонстрации вызовов
+public class Program {
+    public static void Main() {
+        // Выражение: 5 + 10
+        Expression expression = new Add(new Number(5), new Number(10));
+        int result = expression.Interpret(new Dictionary<string, int>());
+        Console.WriteLine(result); // Ожидаемый вывод: 15
+    }
+}
+```
+**Объяснение реализации:** Каждый класс выражения знает, как интерпретировать себя, позволяя строить дерево разбора для вычисления выражения.
+
+**Плюсы и минусы:**
+
+Плюсы: чёткая структура языка, расширяемость операций.
+
+Минусы: трудности масштабирования для сложных языков.
+</details>
+
+<details>
+  <summary><b>Посредник (Mediator)</b></summary>
+
+**Посредник** — это поведенческий шаблон проектирования, который инкапсулирует способ взаимодействия множества объектов, избавляя их от прямых ссылок друг на друга.
+
+**Когда применять:** Когда множество компонентов общаются между собой, что приводит к сильной связанности, и требуется централизовать коммуникацию.
+
+### 🔹 Пример реализации (C#)
+
+```csharp
+using System;
+
+// Абстрактный посредник
+public abstract class Mediator {
+    public abstract void Notify(object sender, string eventCode);
+}
+
+public class ConcreteMediator : Mediator {
+    public Component1 Component1 { get; set; }
+    public Component2 Component2 { get; set; }
+    public override void Notify(object sender, string eventCode) {
+        if (eventCode == "A")
+            Component2.DoC();
+        else if (eventCode == "B")
+            Component1.DoD();
+    }
+}
+
+public class Component1 {
+    private Mediator mediator;
+    public Component1(Mediator mediator) { this.mediator = mediator; }
+    public void DoA() {
+        Console.WriteLine("Component1 does A");
+        mediator.Notify(this, "A");
+    }
+    public void DoD() {
+        Console.WriteLine("Component1 does D");
+    }
+}
+
+public class Component2 {
+    private Mediator mediator;
+    public Component2(Mediator mediator) { this.mediator = mediator; }
+    public void DoB() {
+        Console.WriteLine("Component2 does B");
+        mediator.Notify(this, "B");
+    }
+    public void DoC() {
+        Console.WriteLine("Component2 does C");
+    }
+}
+
+// Класс для демонстрации вызовов
+public class Program {
+    public static void Main() {
+        ConcreteMediator mediator = new ConcreteMediator();
+        mediator.Component1 = new Component1(mediator);
+        mediator.Component2 = new Component2(mediator);
+        mediator.Component1.DoA(); // Вызывает DoA и затем DoC через посредника
+        mediator.Component2.DoB(); // Вызывает DoB и затем DoD через посредника
+    }
+}
+```
+**Объяснение реализации:** Посредник получает уведомления от компонентов и направляет команды другим компонентам, устраняя прямые зависимости между ними.
+
+**Плюсы и минусы:**
+
+Плюсы: уменьшение связанности между объектами, централизованный контроль коммуникаций.
+
+Минусы: риск превращения посредника в «бога-объект», усложнение логики.
+</details>
+
 > #### Структурные паттерны
 
 <details>
