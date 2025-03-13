@@ -811,7 +811,280 @@ namespace ConsoleApplication1
 </details> 
 
 ### Паттерны
-<details><summary>Принципы SOLID</summary></details>
+> #### Принципы Solid
+<details><summary>Принципы единственности (Single Responsibility Principle)</summary>
+Каждый класс должен иметь только одну причину для изменения, то есть отвечать за решение только одной задачи.
+
+**Пример:** Класс, отвечающий за работу с базой данных, не должен заниматься валидацией пользовательского ввода.
+
+### 🔹 Пример реализации (C#)
+
+```csharp
+// Класс для хранения данных о сотруднике
+public class Employee {
+    public string Name { get; set; }
+    public double Salary { get; set; }
+    public void CalculateSalary() {
+        // Логика расчета зарплаты
+    }
+}
+
+// Класс для генерации отчетов
+public class ReportGenerator {
+    public void GenerateReport(Employee employee) {
+        Console.WriteLine($"Отчёт по {employee.Name}");
+    }
+}
+
+// Использование
+class Program {
+    static void Main() {
+        Employee emp = new Employee { Name = "Иван", Salary = 50000 };
+        ReportGenerator report = new ReportGenerator();
+        report.GenerateReport(emp);
+    }
+}
+```
+</details>
+
+<details><summary>Принцип открытости/закрытости (Open/Closed Principle)</summary>
+Программные сущности (классы, модули, функции) должны быть открыты для расширения, но закрыты для модификации.
+
+**Пример:** Использование абстрактных классов или интерфейсов позволяет добавлять новый функционал путём создания новых классов, не изменяя уже существующий код.
+
+### 🔹 Пример реализации (C#)
+
+```csharp
+// Интерфейс оплаты
+public interface IPayment {
+    void Pay();
+}
+
+// Реализация для кредитной карты
+public class CreditCardPayment : IPayment {
+    public void Pay() {
+        Console.WriteLine("Оплата кредитной картой");
+    }
+}
+
+// Реализация для PayPal
+public class PayPalPayment : IPayment {
+    public void Pay() {
+        Console.WriteLine("Оплата через PayPal");
+    }
+}
+
+// Класс, который работает с любым способом оплаты
+// Теперь можно добавлять новые способы оплаты, не меняя класс PaymentProcessor.
+public class PaymentProcessor {
+    public void ProcessPayment(IPayment payment) {
+        payment.Pay();
+    }
+}
+
+// Использование
+class Program {
+    static void Main() {
+        PaymentProcessor processor = new PaymentProcessor();
+        IPayment payment = new CreditCardPayment(); // Можно подставить другой способ оплаты
+        processor.ProcessPayment(payment);
+    }
+}
+```
+</details>
+
+<details><summary>Принцип подстановки Лисков (Liskov Substitution Principle)</summary>
+Объекты подклассов должны корректно заменять объекты базового класса без изменения корректности работы программы.
+
+**Пример:** Если класс-наследник переопределяет поведение так, что клиентский код, использующий базовый тип, начинает работать неверно, нарушается LSP.
+
+### 🔹 Пример реализации c ошибкой (C#)
+
+```csharp
+// В коде класс Bird имеет метод Fly(), но пингвин не умеет летать.
+public class Bird {
+    public virtual void Fly() {
+        Console.WriteLine("Птица летит");
+    }
+}
+
+// Если в коде вызывается bird.Fly(), а объект – Penguin, произойдет исключение.
+public class Penguin : Bird {
+    public override void Fly() {
+        throw new NotImplementedException("Пингвин не умеет летать!");
+    }
+}
+
+```
+
+### 🔹 Пример правильной реализации (C#)
+
+```csharp
+// Разделяем птиц на летающих и не летающих.
+public abstract class Bird {
+    public string Name { get; set; }
+}
+
+public interface IFlyable {
+    void Fly();
+}
+
+public class Sparrow : Bird, IFlyable {
+    public void Fly() {
+        Console.WriteLine("Воробей летит");
+    }
+}
+// Теперь нет необходимости реализовывать Fly() у Penguin, и он не нарушает принцип.
+public class Penguin : Bird {
+    public void Swim() {
+        Console.WriteLine("Пингвин плавает");
+    }
+}
+
+// Использование
+class Program {
+    static void Main() {
+        IFlyable bird = new Sparrow();
+        bird.Fly(); // ✅ Работает без ошибок
+    }
+}
+```
+</details>
+
+<details><summary>Принцип разделения интерфейсов (Interface Segregation Principle)</summary>
+Лучше иметь множество специализированных интерфейсов, чем один универсальный, вынуждающий реализующие классы зависеть от неиспользуемых методов.
+	
+**Пример:** Вместо одного большого интерфейса «IAnimal» с методами для полёта, плавания и бега, лучше определить отдельные интерфейсы, такие как IFlyable, ISwimmable и IRunnable.
+
+### 🔹 Пример реализации c ошибкой (C#)
+
+```csharp
+public interface IWorker {
+    void Work();
+    void Eat();
+}
+
+public class Robot : IWorker {
+    public void Work() {
+        Console.WriteLine("Робот работает");
+    }
+
+    public void Eat() {
+        throw new NotImplementedException("Робот не ест!");
+    }
+}
+```
+
+### 🔹 Пример правильной реализации (C#)
+
+```csharp
+public interface IWorkable {
+    void Work();
+}
+
+public interface IEatable {
+    void Eat();
+}
+
+// Человек работает и ест
+public class Human : IWorkable, IEatable {
+    public void Work() {
+        Console.WriteLine("Человек работает");
+    }
+
+    public void Eat() {
+        Console.WriteLine("Человек ест");
+    }
+}
+
+// Робот только работает
+public class Robot : IWorkable {
+    public void Work() {
+        Console.WriteLine("Робот работает");
+    }
+}
+
+// Использование
+class Program {
+    static void Main() {
+        IWorkable worker = new Robot();
+        worker.Work(); // ✅ Работает без проблем
+    }
+}
+```
+</details>
+
+<details><summary>Принцип инверсии зависимостей (Dependency Inversion Principle)</summary>
+Модули верхнего уровня не должны зависеть от модулей нижнего уровня; оба должны зависеть от абстракций.
+	
+**Пример:** Вместо того, чтобы создавать конкретные реализации внутри класса, лучше принимать необходимые зависимости через конструктор или через DI-контейнер, используя интерфейсы.
+
+### 🔹 Пример реализации c ошибкой (C#)
+
+```csharp
+public class EmailService {
+    public void SendEmail(string message) {
+        Console.WriteLine($"Отправка email: {message}");
+    }
+}
+
+// Если понадобится добавить SMS-уведомления, придется изменять класс Notification.
+public class Notification {
+    private EmailService _emailService = new EmailService();
+
+    public void Send(string message) {
+        _emailService.SendEmail(message);
+    }
+}
+```
+
+### 🔹 Пример правильной реализации (C#)
+
+```csharp
+//Создаём интерфейс INotificationService, а Notification теперь работает с абстракцией.
+
+// Интерфейс уведомления
+public interface INotificationService {
+    void Send(string message);
+}
+
+// Email-уведомление
+public class EmailService : INotificationService {
+    public void Send(string message) {
+        Console.WriteLine($"Отправка email: {message}");
+    }
+}
+
+// SMS-уведомление
+public class SmsService : INotificationService {
+    public void Send(string message) {
+        Console.WriteLine($"Отправка SMS: {message}");
+    }
+}
+
+// Класс Notification теперь зависит от абстракции
+public class Notification {
+    private readonly INotificationService _notificationService;
+
+    public Notification(INotificationService notificationService) {
+        _notificationService = notificationService;
+    }
+
+    public void Notify(string message) {
+        _notificationService.Send(message);
+    }
+}
+
+// Использование
+class Program {
+    static void Main() {
+        INotificationService emailService = new EmailService();
+        Notification notification = new Notification(emailService);
+        notification.Notify("Привет, мир!");
+    }
+}
+```
+</details>
 
 > #### Пораждающие паттерны
 
